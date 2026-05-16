@@ -1,6 +1,6 @@
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/connectionSlice";
 import { Link } from "react-router-dom";
@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 const Connections = () => {
   const dispatch = useDispatch();
   const connections = useSelector((store) => store.connections);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchConnections = async () => {
     try {
@@ -17,7 +19,10 @@ const Connections = () => {
 
       dispatch(addConnections(res?.data?.data));
     } catch (err) {
-      console.log(err.message);
+      setError(err.response?.data?.message || err.message || "Unable to load connections.");
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -25,9 +30,9 @@ const Connections = () => {
     fetchConnections();
   }, []);
 
-  if (!connections) return null;
-
-  if (connections.length === 0)
+  if (loading) return <h1 className="text-center text-white text-2xl my-20">Loading connections...</h1>;
+  if (error) return <h1 className="text-center text-red-400 text-2xl my-20">{error}</h1>;
+  if (!connections || connections.length === 0)
     return <h1 className="text-center text-white text-2xl my-20">No Connections Found</h1>;
 
   return (

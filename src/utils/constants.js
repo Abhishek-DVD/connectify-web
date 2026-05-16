@@ -1,18 +1,5 @@
 
-//local
-// export const BASE_URL = "http://localhost:7777";
-
-//for production in aws
-// export const BASE_URL = "/api";
-
-
-//for production at vercel
-// export const BASE_URL = "https://connectify-murex.vercel.app"
-
-// export const BASE_URL =
-//   window.location.hostname === "localhost"
-//     ? "http://localhost:7777"
-//     : "https://connectify-murex.vercel.app";
-
-// https://connectify-4rzu.onrender.com
-export const BASE_URL = "https://connectify-4rzu.onrender.com";
+// Use Vite env variable first, then local backend for localhost, otherwise deployed backend.
+export const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost" ? "http://localhost:7777" : "https://connectify-4rzu.onrender.com");

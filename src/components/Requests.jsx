@@ -9,6 +9,8 @@ const Requests = () => {
 
     const dispatch = useDispatch();
     const requests = useSelector((store)=>store.requests);
+    const [error,setError] = useState("");
+    const [loading,setLoading] = useState(true);
     const [showButtons,setShowButtons] = useState(true);
 
   const fetchRequests = async ()=>{
@@ -19,7 +21,10 @@ const Requests = () => {
        console.log(res);
        dispatch(addRequests(res?.data?.userRequests));
     }catch(err){
+        setError(err.response?.data?.message || err.message || "Unable to load requests.");
         console.log(err);
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -39,9 +44,9 @@ const Requests = () => {
     fetchRequests();
   },[])
 
-  if(!requests) return;
-
-  if(requests.length===0) return <h1 className="flex justify-center">No requests found.</h1>
+  if (loading) return <h1 className="flex justify-center">Loading requests...</h1>;
+  if (error) return <h1 className="flex justify-center text-red-400">{error}</h1>;
+  if (!requests || requests.length===0) return <h1 className="flex justify-center">No requests found.</h1>
 
   return (
     <div className="my-20 text-center">

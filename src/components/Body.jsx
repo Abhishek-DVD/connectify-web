@@ -20,15 +20,13 @@ const Body = () => {
       });
       dispatch(addUser(res.data));
     } catch (error) {
-      if (error.response?.status === 401) {
-        // Check if the current route is for admin login
-        if (window.location.pathname.startsWith("/admin")) {
-          navigate("/admin/login");
-        } else {
-          navigate("/login");
-        }
-      }
       console.log(error);
+      // Redirect unauthenticated or failed auth checks to a login page.
+      if (window.location.pathname.startsWith("/admin")) {
+        navigate("/admin/login");
+      } else {
+        navigate("/login");
+      }
     }
   };
   

@@ -23,6 +23,20 @@ const Navbar = () => {
     }
   }
 
+  if (!user) {
+    return (
+      <div className="navbar bg-base-300 gap-6">
+        <div className="flex-1">
+          <Link to="/" className="btn btn-ghost text-xl">💻 Connectify</Link>
+        </div>
+        <div className="flex-none flex flex-col sm:flex-row gap-2">
+          <Link to="/login" className="btn btn-primary">Login / Signup</Link>
+          <Link to="/admin/login" className="btn btn-ghost">Admin Login</Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <><div className="navbar bg-base-300 gap-6 hidden md:flex">
     <div className="flex-1">
