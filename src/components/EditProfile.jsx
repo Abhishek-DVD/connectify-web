@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -5,6 +6,8 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import UserCard from "./UserCard";
+
+const DEFAULT_PHOTO_URL = "https://image.pngaaa.com/853/3873853-middle.png";
 
 const EditProfile = ({ user }) => {
   const [firstName, setFirstName] = useState(user.firstName);
@@ -16,21 +19,64 @@ const EditProfile = ({ user }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const saveProfile = async () => {
     try {
+      const cleanedPhotoUrl = photoUrl.trim() || DEFAULT_PHOTO_URL;
       const res = await axios.patch(
         BASE_URL + "/profile/edit",
-        { firstName, lastName, age, gender, about, photoUrl },
+        { firstName, lastName, age, gender, about, photoUrl: cleanedPhotoUrl },
         { withCredentials: true }
       );
       dispatch(addUser(res?.data?.data));
+      setPhotoUrl(cleanedPhotoUrl);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const uploadProfilePhoto = async (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Please select an image smaller than 5MB.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("photo", file);
+    setIsUploadingPhoto(true);
+    setError("");
+
+    try {
+      const res = await axios.post(BASE_URL + "/profile/photo", formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const uploadedPhotoUrl = res?.data?.photoUrl;
+      dispatch(addUser(res?.data?.data));
+      setPhotoUrl(uploadedPhotoUrl);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message);
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -84,7 +130,7 @@ const EditProfile = ({ user }) => {
                   </option>
                   <option>male</option>
                   <option>female</option>
-                  <option>others</option>
+                  <option>other</option>
                 </select>
               </label>
 
@@ -108,11 +154,28 @@ const EditProfile = ({ user }) => {
                 />
               </label>
 
+              <label className="form-control w-full">
+                <span className="label-text">Upload Photo:</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="file-input file-input-bordered w-full"
+                  disabled={isUploadingPhoto}
+                  onChange={(e) => {
+                    uploadProfilePhoto(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+                <span className="label-text-alt mt-1">
+                  {isUploadingPhoto ? "Uploading..." : "JPG, PNG, or WEBP. Max 5MB."}
+                </span>
+              </label>
+
               <p className="text-red-500">{error}</p>
 
               <div className="card-actions justify-center mt-4">
-                <button className="btn btn-primary w-full" onClick={saveProfile}>
-                  Save Profile
+                <button className="btn btn-primary w-full" onClick={saveProfile} disabled={isUploadingPhoto}>
+                  {isUploadingPhoto ? "Uploading Photo..." : "Save Profile"}
                 </button>
               </div>
             </div>
@@ -130,7 +193,7 @@ const EditProfile = ({ user }) => {
             Your Profile Preview
           </motion.h2>
 
-          <UserCard user={{ firstName, lastName, age, gender, about, photoUrl }} />
+          <UserCard user={{ firstName, lastName, age, gender, about, photoUrl: photoUrl.trim() || DEFAULT_PHOTO_URL }} />
         </div>
       </div>
 

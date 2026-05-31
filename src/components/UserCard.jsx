@@ -1,12 +1,14 @@
+/* eslint-disable react/prop-types */
 const UserCard = ({ user }) => {
   const { firstName, lastName, photoUrl, age, gender, about } = user;
+  const displayPhotoUrl = photoUrl || "https://image.pngaaa.com/853/3873853-middle.png";
 
   return (
     <div className="flex justify-center w-full mt-6 mb-16">
       <div className="relative w-full max-w-xs md:max-w-sm rounded-lg shadow-xl overflow-hidden">
         {/* Background Image */}
         <img
-          src={photoUrl}
+          src={displayPhotoUrl}
           alt="User"
           className="w-full h-80 object-cover"
         />
